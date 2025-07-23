@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Solana Meme Coin Scanner</title>
+    <style>
+        body { font-family: sans-serif; padding: 2rem; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 0.5rem; text-align: center; }
+        th { background-color: #f4f4f4; }
+        tr:hover { background-color: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <h1>✅ لیست میم‌کوین‌های امن روی سولانا</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>نام</th>
+                <th>نماد</th>
+                <th>وضعیت وریفای</th>
+                <th>Mint Authority</th>
+                <th>Freeze Authority</th>
+                <th>هولدرها</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in tokens %}
+            <tr>
+                <td>{{ t.name }}</td>
+                <td>{{ t.symbol }}</td>
+                <td>{{ "✅" if t.verified else "❌" }}</td>
+                <td>{{ "❌" if not t.mint_authority else "✅" }}</td>
+                <td>{{ "❌" if not t.freeze_authority else "✅" }}</td>
+                <td><a href="{{ t.holders_url }}" target="_blank">مشاهده</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>
