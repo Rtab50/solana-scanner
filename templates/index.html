@@ -1,44 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>✅ میم‌کوین‌های پامپی سولانا</title>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <title>توکن‌های دریافتی</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; font-family: sans-serif; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+    </style>
 </head>
 <body>
-    <h2>فیلترهای فعال:</h2>
-    <form method="POST">
-        <label><input type="checkbox" name="verified" {{ 'checked' if filters['verified'] }}> وریفای شده</label><br>
-        <label><input type="checkbox" name="lp_locked" {{ 'checked' if filters['lp_locked'] }}> LP Lock</label><br>
-        <label><input type="checkbox" name="mint" {{ 'checked' if filters['mint'] }}> بدون Mint مجدد</label><br>
-        <label><input type="checkbox" name="freeze" {{ 'checked' if filters['freeze'] }}> بدون Freeze</label><br>
-        <label>حداقل هولدر: <input type="number" name="holders_min" value="{{ filters['holders_min'] }}"></label><br>
-        <label>حداکثر مارکت کپ: <input type="number" name="market_cap_max" value="{{ filters['market_cap_max'] }}"></label><br>
-        <label>حداقل قیمت: <input type="number" step="0.0001" name="price_min" value="{{ filters['price_min'] }}"></label><br>
-        <label>حداکثر قیمت: <input type="number" step="0.0001" name="price_max" value="{{ filters['price_max'] }}"></label><br>
-        <label>حداقل حجم 1ساعته: <input type="number" name="volume_min" value="{{ filters['volume_min'] }}"></label><br>
-        <br>
-        <input type="submit" value="اعمال فیلتر">
-    </form>
-    <hr>
-    <h2>✅ لیست میم‌کوین‌های امن روی سولانا</h2>
-    <table border="1" cellpadding="5">
-        <tr>
-            <th>نام</th><th>نماد</th><th>وریفای</th><th>Mint</th><th>Freeze</th><th>هولدر</th><th>مارکت کپ</th><th>قیمت</th><th>📈 Volume 1H</th><th>📉 Price Δ 1H</th>
-        </tr>
-        {% for token in tokens %}
-        <tr>
-            <td>{{ token.name }}</td>
-            <td>{{ token.symbol }}</td>
-            <td>{{ '✅' if token.is_verified else '❌' }}</td>
-            <td>{{ '✅' if not token.can_mint else '❌' }}</td>
-            <td>{{ '✅' if not token.can_freeze else '❌' }}</td>
-            <td>{{ token.holders }}</td>
-            <td>{{ token.market_cap }}</td>
-            <td>{{ token.price_usd }}</td>
-            <td>{{ token.volume_h1 }}</td>
-            <td>{{ token.price_change_h1 }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+<h2>✅ لیست خام توکن‌های دریافتی از API</h2>
+<table>
+    <tr>
+        <th>نام</th>
+        <th>نماد</th>
+        <th>آدرس</th>
+    </tr>
+    {% for token in tokens %}
+    <tr>
+        <td>{{ token.name }}</td>
+        <td>{{ token.symbol }}</td>
+        <td>{{ token.address }}</td>
+    </tr>
+    {% endfor %}
+</table>
 </body>
 </html>
+
