@@ -16,10 +16,11 @@ def index():
         solana_tokens = [t for t in data if t.get('chainId') == 'solana']
         selected_tokens = []
 
-        for token in solana_tokens[:20]:  # محدود به 20 توکن اول برای سرعت
+        for token in solana_tokens[:10]:  # محدود به 10 توکن اول برای سرعت
             address = token.get('tokenAddress')
-            name = token.get('name')
-            symbol = token.get('symbol')
+            name = token.get('displayName') or token.get('name') or 'Unknown'
+            symbol = token.get('symbol') or token.get('displaySymbol') or '???'
+
 
             headers = {"accept": "application/json", "Authorization": f"Bearer {SOLSCAN_API_KEY}"}
             holders_url = f"https://pro-api.solscan.io/v1.0/token/holders?tokenAddress={address}&limit=10"
