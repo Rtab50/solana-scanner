@@ -6,7 +6,7 @@ app = Flask(__name__)
 @app.route("/")
 def index():
     url = "https://public-api.birdeye.so/public/tokenlist?limit=50"
-    headers = {"X-API-KEY": ""}  # بدون کلید API هم فعلاً کار می‌کند
+    headers = {"X-API-KEY": ""}  # بدون کلید API هم معمولاً جواب می‌ده
 
     try:
         response = requests.get(url, headers=headers)
@@ -16,6 +16,3 @@ def index():
         print("Error fetching tokens:", e)
 
     return render_template("index.html", tokens=tokens)
-
-if __name__ == "__main__":
-    app.run(debug=True)
