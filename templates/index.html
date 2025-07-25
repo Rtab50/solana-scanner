@@ -1,1 +1,26 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>توکن‌های غیرمتمرکز</title>
+</head>
+<body>
+    <h2>✅ لیست میم‌کوین‌های با تمرکز کمتر از ۲۵٪</h2>
+    <table border="1" cellpadding="8">
+        <tr>
+            <th>نام</th>
+            <th>نماد</th>
+            <th>آدرس</th>
+            <th>Top10٪</th>
+        </tr>
+        {% for token in tokens %}
+        <tr>
+            <td>{{ token.name }}</td>
+            <td>{{ token.symbol }}</td>
+            <td><a href="https://solscan.io/token/{{ token.address }}" target="_blank">{{ token.address }}</a></td>
+            <td>{{ token.top10_percent }}%</td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
