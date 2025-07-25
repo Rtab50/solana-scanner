@@ -9,51 +9,67 @@ SOLSCAN_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjcmVhdGVkQXQiOjE3NTM0
 @app.route('/')
 def index():
     url = "https://api.dexscreener.com/token-profiles/latest/v1"
+    headers = {"accept": "application/json", "Authorization": f"Bearer {SOLSCAN_API_KEY}"}
+    selected_tokens = []
+
     try:
         response = requests.get(url, timeout=20)
         data = response.json()
 
-        solana_tokens = [t for t in data if t.get('chainId') == 'solana']
-        selected_tokens = []
+        for token in data if isinstance(data, list) else data.get("tokens", []):
+            if token.get('chainId') != 'solana':
+                continue
 
-        for token in solana_tokens[:10]:  # محدود به 10 توکن اول برای سرعت
             address = token.get('tokenAddress')
-            name = token.get('displayName') or token.get('name') or 'Unknown'
-            symbol = token.get('symbol') or token.get('displaySymbol') or '???'
+            if not address:
+                continue
 
-
-            headers = {"accept": "application/json", "Authorization": f"Bearer {SOLSCAN_API_KEY}"}
+            # Step 1: گرفتن 10 هولدر برتر
             holders_url = f"https://pro-api.solscan.io/v1.0/token/holders?tokenAddress={address}&limit=10"
-
             try:
                 holders_res = requests.get(holders_url, headers=headers, timeout=15)
                 holders_data = holders_res.json()
 
-                total_percent = 0.0
-                for h in holders_data.get('data', []):
-                    percent = h.get('percent', 0)
-                    total_percent += percent
+                total_percent = sum(h.get('percent', 0) for h in holders_data.get('data', []))
 
                 if total_percent <= 25:
-                    selected_tokens.append({"name": name, "symbol": symbol, "address": address, "top10_percent": round(total_percent, 2)})
+                    # Step 2: گرفتن نام و نماد از Solscan
+                    meta_url = f"https://pro-api.solscan.io/v1.0/token/meta?tokenAddress={address}"
+                    try:
+                        meta_res = requests.get(meta_url, headers=headers, timeout=10)
+                        meta_data = meta_res.json().get("data", {})
+                        name = meta_data.get("name", "Unknown")
+                        symbol = meta_data.get("symbol", "???")
+                    except Exception as e:
+                        print(f"Error getting metadata for {address}: {e}")
+                        name, symbol = "Unknown", "???"
+
+                    selected_tokens.append({
+                        "name": name,
+                        "symbol": symbol,
+                        "address": address,
+                        "top10_percent": round(total_percent, 2)
+                    })
             except Exception as e:
-                print(f"Error getting holders for {symbol}: {e}")
+                print(f"Error getting holders for {address}: {e}")
 
         return render_template_string(TEMPLATE, tokens=selected_tokens)
 
     except Exception as e:
         return f"Error fetching token list: {e}"
 
-
+# قالب HTML خروجی
 TEMPLATE = """
 <!DOCTYPE html>
 <html>
 <head>
     <title>Solana Tokens Filtered</title>
     <style>
-        table { border-collapse: collapse; width: 100%; }
+        body { font-family: sans-serif; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
         th, td { padding: 8px; text-align: left; border: 1px solid #ddd; }
         th { background-color: #f2f2f2; }
+        h1 { color: #333; }
     </style>
 </head>
 <body>
@@ -79,5 +95,6 @@ TEMPLATE = """
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
+
 
 
