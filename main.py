@@ -1,61 +1,82 @@
-from flask import Flask, render_template
 import requests
+from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-SOLSCAN_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."  # 🔐 کلید شما
-SOLSCAN_API_URL = "https://pro-api.solscan.io/v2/token/holders"
-DEXSCREENER_API = "https://api.dexscreener.com/token-profiles/latest/v1"
-
-def get_tokens_from_dexscreener():
-    response = requests.get(DEXSCREENER_API)
-    if response.status_code == 200:
-        return response.json()
-    return []
-
-def get_top10_holder_percent(token_address):
-    headers = {
-        "accept": "application/json",
-        "token": SOLSCAN_API_KEY
-    }
-    params = {
-        "tokenAddress": token_address,
-        "limit": 10
-    }
-    response = requests.get(SOLSCAN_API_URL, headers=headers, params=params)
-    if response.status_code != 200:
-        return None
-    data = response.json()
-    total_percent = sum([item.get("percent", 0) for item in data.get("data", [])])
-    return total_percent
+# API Key Solscan
+SOLSCAN_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjcmVhdGVkQXQiOjE3NTM0NDE2NzA4MjIsImVtYWlsIjoidGFiZXNoZ29sZEBnbWFpbC5jb20iLCJhY3Rpb24iOiJ0b2tlbi1hcGkiLCJhcGlWZXJzaW9uIjoidjIiLCJpYXQiOjE3NTM0NDE2NzB9.AUP36tMNi7VfW2ztMBwOit4_KI1XgDBvbVLHH7HqzUo"
 
 @app.route('/')
 def index():
-    result_tokens = []
-    data = get_tokens_from_dexscreener()
+    url = "https://api.dexscreener.com/token-profiles/latest/v1"
+    try:
+        response = requests.get(url, timeout=20)
+        data = response.json()
 
-    for token in data[:30]:  # فقط 30 توکن اول برای کاهش فشار
-        token_address = token.get("tokenAddress")
-        name = token.get("label")
-        symbol = token.get("label")
+        solana_tokens = [t for t in data.get('tokens', []) if t.get('chainId') == 'solana']
+        selected_tokens = []
 
-        if not token_address:
-            continue
+        for token in solana_tokens[:20]:  # محدود به 20 توکن اول برای سرعت
+            address = token.get('tokenAddress')
+            name = token.get('name')
+            symbol = token.get('symbol')
 
-        holder_percent = get_top10_holder_percent(token_address)
-        if holder_percent is None:
-            continue
+            headers = {"accept": "application/json", "Authorization": f"Bearer {SOLSCAN_API_KEY}"}
+            holders_url = f"https://pro-api.solscan.io/v1.0/token/holders?tokenAddress={address}&limit=10"
 
-        if holder_percent <= 25:
-            result_tokens.append({
-                "name": name,
-                "symbol": symbol,
-                "address": token_address,
-                "top10_percent": round(holder_percent, 2)
-            })
+            try:
+                holders_res = requests.get(holders_url, headers=headers, timeout=15)
+                holders_data = holders_res.json()
 
-    return render_template("index.html", tokens=result_tokens)
+                total_percent = 0.0
+                for h in holders_data.get('data', []):
+                    percent = h.get('percent', 0)
+                    total_percent += percent
+
+                if total_percent <= 25:
+                    selected_tokens.append({"name": name, "symbol": symbol, "address": address, "top10_percent": round(total_percent, 2)})
+            except Exception as e:
+                print(f"Error getting holders for {symbol}: {e}")
+
+        return render_template_string(TEMPLATE, tokens=selected_tokens)
+
+    except Exception as e:
+        return f"Error fetching token list: {e}"
+
+
+TEMPLATE = """
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Solana Tokens Filtered</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { padding: 8px; text-align: left; border: 1px solid #ddd; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>🪙 توکن‌های سولانا با مجموع سهم 10 هولدر ≤ 25%</h1>
+    {% if tokens %}
+        <table>
+            <tr><th>نام</th><th>نماد</th><th>آدرس</th><th>درصد 10 هولدر</th></tr>
+            {% for t in tokens %}
+                <tr>
+                    <td>{{ t.name }}</td>
+                    <td>{{ t.symbol }}</td>
+                    <td><a href="https://solscan.io/token/{{ t.address }}" target="_blank">{{ t.address }}</a></td>
+                    <td>{{ t.top10_percent }}%</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>هیچ توکنی با این شرط پیدا نشد.</p>
+    {% endif %}
+</body>
+</html>
+"""
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
+
 
