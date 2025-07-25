@@ -13,7 +13,7 @@ def index():
         response = requests.get(url, timeout=20)
         data = response.json()
 
-        solana_tokens = [t for t in data.get('tokens', []) if t.get('chainId') == 'solana']
+        solana_tokens = [t for t in data if t.get('chainId') == 'solana']
         selected_tokens = []
 
         for token in solana_tokens[:20]:  # محدود به 20 توکن اول برای سرعت
