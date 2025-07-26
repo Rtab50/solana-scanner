@@ -2,17 +2,16 @@
 <html lang="fa">
 <head>
     <meta charset="UTF-8">
-    <title>🪙 توکن‌های امن سولانا</title>
+    <title>🪙 توکن‌های سولانا با سهم ۱۰ هولدر اول ≤ ۲۵٪</title>
     <style>
-        body { font-family: sans-serif; direction: rtl; background: #f7f7f7; padding: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 10px; border: 1px solid #ccc; text-align: center; }
-        th { background: #222; color: #fff; }
-        tr:nth-child(even) { background-color: #eee; }
+        body { font-family: sans-serif; background: #f8f9fa; padding: 2rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 0.5rem; border: 1px solid #ccc; text-align: center; }
+        th { background-color: #343a40; color: white; }
     </style>
 </head>
 <body>
-    <h2>🪙 توکن‌های سولانا با مجموع سهم 10 هولدر ≤ 25%</h2>
+    <h2>🪙 توکن‌های سولانا با سهم ۱۰ هولدر اول ≤ ۲۵٪</h2>
     {% if tokens %}
     <table>
         <thead>
@@ -20,7 +19,7 @@
                 <th>نام</th>
                 <th>نماد</th>
                 <th>آدرس</th>
-                <th>درصد 10 هولدر</th>
+                <th>درصد</th>
             </tr>
         </thead>
         <tbody>
@@ -29,13 +28,13 @@
                 <td>{{ token.name }}</td>
                 <td>{{ token.symbol }}</td>
                 <td>{{ token.address }}</td>
-                <td>{{ token.top10_percent }}%</td>
+                <td>{{ token.percent }}%</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     {% else %}
-    <p>هیچ توکنی شرایط فیلتر را ندارد.</p>
+    <p>هیچ توکنی با این شرایط یافت نشد.</p>
     {% endif %}
 </body>
 </html>
