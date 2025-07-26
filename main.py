@@ -8,7 +8,7 @@ SOLSCAN_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjcmVhdGVkQXQiOjE3NTM0
 
 # آدرس توکن‌هایی که می‌خوای تست کنی
 TOKEN_ADDRESSES = [
-    "Ax9hizBqVnwigABP2U5itsGAnUwqigqKf9GL3ZZZbonk",
+    "DGKj2gcKkrYnJYLGN89d1yStpx7r6yPkR166opx2bonk",
     "GLuQ2KQtrYV8R7aZi5b6xz5vZgz5VycquNR5PCGbonk",
     "52rH2eChpf3oSgGoEM24dEA6NF7W1HvMWVj2u6MpHray",
     "6u6tvKcrqstqKXRoKaT4vEFYd3DetE3cuP4LQS3Ljups",
