@@ -1,79 +1,77 @@
 import requests
-from flask import Flask, Response
-import os
+from flask import Flask, render_template_string
 
 app = Flask(__name__)
 
-SOLSCAN_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjcmVhdGVkQXQiOjE3NTM0NDE2NzA4MjIsImVtYWlsIjoidGFiZXNoZ29sZEBnbWFpbC5jb20iLCJhY3Rpb24iOiJ0b2tlbi1hcGkiLCJhcGlWZXJzaW9uIjoidjIiLCJpYXQiOjE3NTM0NDE2NzB9.AUP36tMNi7VfW2ztMBwOit4_KI1XgDBvbVLHH7HqzUo"
-
-# آدرس توکن‌هایی که می‌خوای تست کنی
+# لیست دستی برای تست توکن‌ها
 TOKEN_ADDRESSES = [
     "DGKj2gcKkrYnJYLGN89d1yStpx7r6yPkR166opx2bonk",
-    "GLuQ2KQtrYV8R7aZi5b6xz5vZgz5VycquNR5PCGbonk",
-    "52rH2eChpf3oSgGoEM24dEA6NF7W1HvMWVj2u6MpHray",
-    "6u6tvKcrqstqKXRoKaT4vEFYd3DetE3cuP4LQS3Ljups",
-    "HCJ7FBu1xzTA7ZU1XWqZ9iJRPmLFqDEuTnCGWQoCbonk",
-    "9bBRFSUdVby8fD3hKMLqHo95evVH8ATqitHTpd55moon",
+    "Ax9hizBqVnwigABP2U5itsGAnUwqigqKf9GL3ZZZbonk",
+    "GLuQ2KQtrYV8R7aZi5b6xz5vZgz5VycquNR5PCGbonk"
 ]
 
-def get_token_info(address):
-    url = f"https://public-api.solscan.io/token/meta?tokenAddress={address}"
-    headers = {
-        "accept": "application/json",
-        "token": SOLSCAN_API_KEY
-    }
-    try:
-        r = requests.get(url, headers=headers)
-        if r.status_code == 200:
-            data = r.json()
-            return data.get("name", "Unknown"), data.get("symbol", "Unknown")
-    except Exception as e:
-        print(f"Error fetching token info for {address}: {e}")
-    return "Unknown", "Unknown"
+SOLSCAN_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjcmVhdGVkQXQiOjE3NTM0NDE2NzA4MjIsImVtYWlsIjoidGFiZXNoZ29sZEBnbWFpbC5jb20iLCJhY3Rpb24iOiJ0b2tlbi1hcGkiLCJhcGlWZXJzaW9uIjoidjIiLCJpYXQiOjE3NTM0NDE2NzB9.AUP36tMNi7VfW2ztMBwOit4_KI1XgDBvbVLHH7HqzUo"  # کلید Solscan را اینجا وارد کن
 
-def get_top_holders_percent(address):
-    url = f"https://public-api.solscan.io/token/holders?tokenAddress={address}&limit=10&offset=0"
-    headers = {
-        "accept": "application/json",
-        "token": SOLSCAN_API_KEY
-    }
+def get_token_info(token_address):
+    url = f"https://public-api.solscan.io/v1.0/token/meta?tokenAddress={token_address}"
+    headers = {"accept": "application/json", "Authorization": SOLSCAN_API_KEY}
     try:
-        r = requests.get(url, headers=headers)
-        if r.status_code == 200:
-            data = r.json()
-            holders = data if isinstance(data, list) else data.get("data", [])
-            total_percent = 0
-            for h in holders:
-                percent = h.get("percentage", 0)
-                if percent is not None:
-                    total_percent += float(percent)
-            return round(total_percent, 2)
-    except Exception as e:
-        print(f"Error fetching holders for {address}: {e}")
-    return 100.0  # پیش‌فرض بالا برای حذف از لیست
+        response = requests.get(url, headers=headers, timeout=10)
+        data = response.json()
+        return data.get("name", "Unknown"), data.get("symbol", "Unknown")
+    except:
+        return "Unknown", "Unknown"
 
-@app.route("/", methods=["GET", "HEAD"])
-def home():
-    results = []
+def get_top10_holder_percent(token_address):
+    url = f"https://public-api.solscan.io/v1.0/token/holders?tokenAddress={token_address}&limit=10"
+    headers = {"accept": "application/json", "Authorization": SOLSCAN_API_KEY}
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        holders = response.json()
+        total_percent = 0.0
+        for holder in holders:
+            percent = holder.get("percentage", 0.0)
+            total_percent += percent
+        return total_percent
+    except:
+        return None
+
+@app.route("/")
+def index():
+    selected_tokens = []
+
     for address in TOKEN_ADDRESSES:
-        top10_percent = get_top_holders_percent(address)
-        if top10_percent <= 25:
+        percent = get_top10_holder_percent(address)
+        if percent is None:
+            continue
+        if percent <= 25.0:
             name, symbol = get_token_info(address)
-            results.append({
+            selected_tokens.append({
                 "name": name,
                 "symbol": symbol,
                 "address": address,
-                "top10_percent": top10_percent
+                "top10_percent": round(percent, 2)
             })
 
-    # ساخت جدول خروجی
-    output = "🪙 توکن‌های سولانا با مجموع سهم 10 هولدر ≤ 25%\n"
-    output += "نام\tنماد\tآدرس\tدرصد 10 هولدر\n"
-    for token in results:
-        output += f"{token['name']}\t{token['symbol']}\t{token['address']}\t{token['top10_percent']}%\n"
-
-    return Response(output, mimetype="text/plain")
+    html = """
+    <h2>🪙 توکن‌های سولانا با مجموع سهم 10 هولدر ≤ 25%</h2>
+    <table border="1" cellspacing="0" cellpadding="6">
+        <tr><th>نام</th><th>نماد</th><th>آدرس</th><th>درصد 10 هولدر</th></tr>
+        {% for token in tokens %}
+        <tr>
+            <td>{{ token.name }}</td>
+            <td>{{ token.symbol }}</td>
+            <td>{{ token.address }}</td>
+            <td>{{ token.top10_percent }}%</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% if not tokens %}
+    <p>هیچ توکنی با این شرایط یافت نشد.</p>
+    {% endif %}
+    """
+    return render_template_string(html, tokens=selected_tokens)
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8000)
+    app.run(debug=True)
 
