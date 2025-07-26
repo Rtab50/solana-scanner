@@ -4,7 +4,7 @@ import os
 
 app = Flask(__name__)
 
-SOLSCAN_API_KEY = os.getenv("SOLSCAN_API_KEY") or "YOUR_SOLSCAN_API_KEY"  # کلید خودت رو بذار
+SOLSCAN_API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjcmVhdGVkQXQiOjE3NTM0NDE2NzA4MjIsImVtYWlsIjoidGFiZXNoZ29sZEBnbWFpbC5jb20iLCJhY3Rpb24iOiJ0b2tlbi1hcGkiLCJhcGlWZXJzaW9uIjoidjIiLCJpYXQiOjE3NTM0NDE2NzB9.AUP36tMNi7VfW2ztMBwOit4_KI1XgDBvbVLHH7HqzUo"
 
 # آدرس توکن‌هایی که می‌خوای تست کنی
 TOKEN_ADDRESSES = [
